@@ -11,6 +11,7 @@ const userSchema = new Schema({
   manager_accepted: { type: Boolean, required: false, default: false},
   pre_delay: { type: Number, required: false, default: 0},
   sent_delay: { type: Number, required: false, default: 0},
+  finished: {type: Boolean, required: false, default:false}
 }, {
   timestamps: true,
 });

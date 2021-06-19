@@ -5,6 +5,89 @@ let Food = require('../models/food.model');
 let Order = require('../models/order.model');
 let Manager = require('../models/manager.model');
 
+router.route('/add/order/food/:name/:custphone/:res_name').get(async function(req,res,nxt){
+    const content = req.params.name;
+    const cust_phone = req.params.custphone;
+    const res_name = req.params.res_name;
+    let food;
+    await Food.find({'name':content, 'res_name':res_name},function(err,doc){
+        if (err)
+        return res.status(400).json('Error: ' + err);
+        food = doc[0];
+    }); 
+    await Order.find({'res_name':food["res_name"], 'finished':false},function(err,doc){
+        if (err)
+        return res.status(400).json('Error: ' + err);
+        if (doc.length === 0){
+            let list = [];
+            list.push(content);
+            let count = [];
+            count.push(1);
+            const total = 0;
+            const manager_accepted = false;
+            const pre_delay = 0;
+            const sent_delay = 0;
+            const finished = false;
+            const newOrder = new Order({
+                total,
+                list,
+                count,
+                cust_phone,
+                res_name,
+                manager_accepted,
+                pre_delay,
+                sent_delay,
+                finished,
+              });
+            
+              newOrder.save()
+              .then(() => res.json(newOrder.id))
+                .catch(err => res.status(400).json('Error: ' + err));
+        }else{
+            doc[0]["list"].push(content);
+            doc[0]["count"].push(1);
+            doc[0].save()
+                .then(() => res.json(doc[0]["id"]))
+                .catch(err => res.status(400).json('Error: ' + err));
+        }
+        
+    });
+});
+
+router.route('/order/').post(async function(req,res,nxt){
+    const id = req.body.id;
+    Order.findById(id,function(err,doc){
+        if (err)
+            return res.status(400).json('Error: ' + err);
+        return res.json(doc);
+    }); 
+});
+
+router.route('/update/order').post((req, res) => {
+    Order.findById(req.body.id)
+    .then(Order => {
+        if (req.body.list) 
+            Order.list = req.body.list;
+        if (req.body.count)
+            Order.count = req.body.count;
+  
+        Order.save()
+          .then(() => res.json(Order.id))
+          .catch(err => res.status(400).json('Error: ' + err));
+
+    })
+    .catch(err => res.status(400).json('Error: ' + err));
+  });
+
+router.route('/delete/order/').post(async function(req,res,nxt){
+    const id = req.body.id;
+    Order.findByIdAndDelete(id,function(err,doc){
+        if (err)
+            return res.status(400).json('Error: ' + err);
+        return res.json(doc);
+    }); 
+});
+
 router.route('/search/restaurant/:name').get(function(req,res,nxt){
     const content = req.params.name;
     Manager.find({'name':content},function(err,doc){
