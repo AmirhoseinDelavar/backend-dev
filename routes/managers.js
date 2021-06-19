@@ -1,7 +1,27 @@
 const router = require('express').Router();
 let Manager = require('../models/manager.model');
 let Food = require('../models/food.model');
-const { findOneAndDelete } = require('../models/manager.model');
+let Order = require('../models/order.model');
+
+router.route('/order').post((req, res) => {
+    Manager.find({'res_name': req.body.res_name}, function(err,doc){
+        if (err)
+            return res.status(400).json('Error: ' + err)
+        return res.json(doc);
+    });
+  });
+
+router.route('/update/order').post((req, res) => {
+    Order.findById(req.body.id)
+      .then(Order => {
+          Order.manager_accepted = Boolean(req.body.accepted);
+          Order.save()
+            .then(() => res.json(Order.id))
+            .catch(err => res.status(400).json('Error: ' + err));
+  
+      })
+      .catch(err => res.status(400).json('Error: ' + err));
+  });
 
 router.route('/add/food').post((req, res) => {
     const name = req.body.name;
@@ -87,7 +107,7 @@ router.route('/login').post((req, res) => {
     const password = req.body.password;
     Manager.find({'email': email}, function(err,doc){
         if (err)
-            res.status(400).json('Error: ' + err)
+            return res.status(400).json('Error: ' + err)
         else if(doc[0]["password"] == password)
             return res.json(doc[0]["id"]);
         else 
