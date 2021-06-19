@@ -2,9 +2,31 @@ const router = require('express').Router();
 let Manager = require('../models/manager.model');
 let Food = require('../models/food.model');
 let Order = require('../models/order.model');
+let Comment = require('../models/comment.model');
+
+router.route('/comments/:name').get((req, res) => {
+    Comment.find({'res_name': req.params.name}, function(err,doc){
+        if (err)
+            return res.status(400).json('Error: ' + err)
+        return res.json(doc);
+    });
+  });
+
+router.route('/reply').post((req, res) => {
+    Comment.findById(req.body.id)
+      .then(Comment => {
+          Comment.reply = req.body.reply;
+          Comment.save()
+            .then(() => res.json(Comment.id))
+            .catch(err => res.status(400).json('Error: ' + err));
+  
+      })
+      .catch(err => res.status(400).json('Error: ' + err));
+  });
+
 
 router.route('/order').post((req, res) => {
-    Manager.find({'res_name': req.body.res_name}, function(err,doc){
+    Order.find({'res_name': req.body.res_name}, function(err,doc){
         if (err)
             return res.status(400).json('Error: ' + err)
         return res.json(doc);
