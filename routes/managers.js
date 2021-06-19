@@ -1,11 +1,6 @@
 const router = require('express').Router();
 let Manager = require('../models/manager.model');
 
-// router.route('/').get((req, res) => {
-//   Manager.find()
-//     .then(Managers => res.json(Managers))
-//     .catch(err => res.status(400).json('Error: ' + err));
-// });
 
 router.route('/register').post((req, res) => {
   const email = req.body.email;
@@ -51,31 +46,26 @@ router.route('/login').post((req, res) => {
     
   });
 
-router.route('/:id').get((req, res) => {
-  Manager.findById(req.params.id)
-    .then(Manager => res.json(Manager))
-    .catch(err => res.status(400).json('Error: ' + err));
-});
-
-router.route('/:id').delete((req, res) => {
-  Manager.findByIdAndDelete(req.params.id)
-    .then(() => res.json('Manager deleted.'))
-    .catch(err => res.status(400).json('Error: ' + err));
-});
-
-router.route('/update/:id').post((req, res) => {
-  Manager.findById(req.params.id)
+router.route('/update').post((req, res) => {
+  Manager.findById(req.body.id)
     .then(Manager => {
-      Manager.username = req.body.username;
-      Manager.description = req.body.description;
-      Manager.duration = Number(req.body.duration);
-      Manager.date = Date.parse(req.body.date);
+        Manager.password = req.body.password;
+        Manager.name = req.body.name;
+        Manager.section = req.body.section;
+        Manager.address = req.body.address;
+        Manager.service_sections = req.body.service_sections;
+        Manager.working_hours = Date.parse(req.body.working_hours);
+        Manager.delay = Number(req.body.delay);
+        Manager.fee = Number(req.body.fee);
+        Manager.date = Date.parse(req.body.date);
+  
+        Manager.save()
+          .then(() => res.json(Manager.id))
+          .catch(err => res.status(400).json('Error: ' + err));
 
-      Manager.save()
-        .then(() => res.json('Manager updated!'))
-        .catch(err => res.status(400).json('Error: ' + err));
     })
     .catch(err => res.status(400).json('Error: ' + err));
 });
+
 
 module.exports = router;
