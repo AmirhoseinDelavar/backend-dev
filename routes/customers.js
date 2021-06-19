@@ -18,7 +18,7 @@ router.route('/register').post((req, res) => {
   if (Date.now() < this_year){
     credit = 1000 + credit;
   }
-  
+
   const newCustomer = new Customer({
     phonenum,
     password,
@@ -52,12 +52,18 @@ router.route('/login').post((req, res) => {
 router.route('/update').post((req, res) => {
   Customer.findById(req.body.id)
     .then(Customer => {
-        Customer.password = req.body.password;
-        Customer.name = req.body.name;
-        Customer.section = req.body.section;
-        Customer.address = req.body.address;
-        Customer.credit = Number(req.body.credit);
-        Customer.date = Date.parse(req.body.date);
+        if (req.body.password)
+            Customer.password = req.body.password;
+        if (req.body.name)
+            Customer.name = req.body.name;
+        if (req.body.section)
+            Customer.section = req.body.section;
+        if (req.body.address)
+            Customer.address = req.body.address;
+        if (req.body.credit)
+            Customer.credit = Number(req.body.credit);
+        if (req.body.date)
+            Customer.date = Date.parse(req.body.date);
   
         Customer.save()
           .then(() => res.json(Customer.id))
@@ -68,4 +74,4 @@ router.route('/update').post((req, res) => {
 });
 
 
-module.exports = router;
+module.exports = router; 
