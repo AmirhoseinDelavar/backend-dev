@@ -5,6 +5,24 @@ let Food = require('../models/food.model');
 let Order = require('../models/order.model');
 let Manager = require('../models/manager.model');
 
+// router.route('/favorite/:custphone').get(function(req,res,nxt){
+//     const cust_phone = req.params.custphone;
+//     Order.find({'cust_phone': cust_phone},function(err,doc){
+//         if (err)
+//             return res.status(400).json('Error: ' + err);
+//         return res.json(doc);
+//     }); 
+// });
+
+router.route('/history/:custphone').get(function(req,res,nxt){
+    const cust_phone = req.params.custphone;
+    Order.find({'cust_phone': cust_phone},function(err,doc){
+        if (err)
+            return res.status(400).json('Error: ' + err);
+        return res.json(doc);
+    }); 
+});
+
 router.route('/add/order/food/:name/:custphone/:res_name').get(async function(req,res,nxt){
     const content = req.params.name;
     const cust_phone = req.params.custphone;
