@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-  name: { type: String, required: true, unique:true,trim: true},
+  name: { type: String, required: true,trim: true},
   price: { type: Number, required: true},
   res_name: { type: String, required: true},
   available: { type: Boolean, required: true},

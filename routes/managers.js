@@ -25,8 +25,8 @@ router.route('/reply').post((req, res) => {
   });
 
 
-router.route('/order').post((req, res) => {
-    Order.find({'res_name': req.body.res_name}, function(err,doc){
+router.route('/orders/:name').get((req, res) => {
+    Order.find({'res_name': req.params.name}, function(err,doc){
         if (err)
             return res.status(400).json('Error: ' + err)
         return res.json(doc);
