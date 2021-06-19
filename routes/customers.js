@@ -14,6 +14,19 @@ let Manager = require('../models/manager.model');
 //     }); 
 // });
 
+router.route('/order/final').post(function(req,res,nxt){
+    const id = req.body.id;
+    Order.findById(id,function(err,doc){
+        if (err)
+            return res.status(400).json('Error: ' + err);
+        doc["user_accepted"] = true;
+        doc.save()
+                .then(() => res.json(doc["id"]))
+                .catch(err => res.status(400).json('Error: ' + err));
+        
+    }); 
+});
+
 router.route('/history/:custphone').get(function(req,res,nxt){
     const cust_phone = req.params.custphone;
     Order.find({'cust_phone': cust_phone},function(err,doc){
@@ -46,12 +59,14 @@ router.route('/add/order/food/:name/:custphone/:res_name').get(async function(re
             const pre_delay = 0;
             const sent_delay = 0;
             const finished = false;
+            const user_accepted = false;
             const newOrder = new Order({
                 total,
                 list,
                 count,
                 cust_phone,
                 res_name,
+                user_accepted,
                 manager_accepted,
                 pre_delay,
                 sent_delay,
@@ -88,7 +103,12 @@ router.route('/update/order').post((req, res) => {
             Order.list = req.body.list;
         if (req.body.count)
             Order.count = req.body.count;
-  
+        if (req.body.pre_delay)
+            Order.pre_delay = req.body.pre_delay;
+        if (req.body.sent_delay)
+            Order.sent_delay = req.body.sent_delay;
+        if (req.body.finished)
+            Order.finished = req.body.finished;
         Order.save()
           .then(() => res.json(Order.id))
           .catch(err => res.status(400).json('Error: ' + err));

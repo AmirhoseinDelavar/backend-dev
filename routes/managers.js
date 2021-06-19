@@ -26,7 +26,7 @@ router.route('/reply').post((req, res) => {
 
 
 router.route('/orders/:name').get((req, res) => {
-    Order.find({'res_name': req.params.name}, function(err,doc){
+    Order.find({'res_name': req.params.name, 'user_accepted':true}, function(err,doc){
         if (err)
             return res.status(400).json('Error: ' + err)
         return res.json(doc);
@@ -36,7 +36,7 @@ router.route('/orders/:name').get((req, res) => {
 router.route('/update/order').post((req, res) => {
     Order.findById(req.body.id)
       .then(Order => {
-          Order.manager_accepted = Boolean(req.body.accepted);
+          Order.manager_accepted = true;
           Order.save()
             .then(() => res.json(Order.id))
             .catch(err => res.status(400).json('Error: ' + err));
