@@ -205,7 +205,7 @@ router.route('/delete/order/').post(async function(req,res,nxt){
 
 router.route('/search/restaurant/:name').get(function(req,res,nxt){
     const content = req.params.name;
-    Manager.find({'name':content},function(err,doc){
+    Food.find({'res_name':content},function(err,doc){
         if (err)
             return res.status(400).json('Error: ' + err);
         return res.json(doc);
