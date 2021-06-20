@@ -16,14 +16,11 @@ mongoose.connect('mongodb://localhost:27017/', {
     useUnifiedTopology: true 
 }, err => err ? console.log(err) : console.log('Connected to database'));
 
-const exercisesRouter = require('./routes/exercises');
-const usersRouter = require('./routes/users');
 const managersRouter = require('./routes/managers');
 const customersRouter = require('./routes/customers');
 
 
-app.use('/exercises', exercisesRouter);
-app.use('/users', usersRouter);
+
 app.use('/managers', managersRouter);
 app.use('/customers', customersRouter);
 
