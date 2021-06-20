@@ -33,7 +33,7 @@ router.route('/orders/:name').get((req, res) => {
     });
   });
 
-router.route('/update/order').post((req, res) => {
+router.route('/accept/order').post((req, res) => {
     Order.findById(req.body.id)
       .then(Order => {
           Order.manager_accepted = true;

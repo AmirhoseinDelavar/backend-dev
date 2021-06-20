@@ -5,7 +5,6 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
   total: { type: Number, required: false },
   list: [{ type: String, required: true}],
-  count:[{ type: Number, required: true}],
   cust_phone: { type: String, required: true},
   res_name: { type: String, required: true},
   user_accepted: { type: Boolean, required: false, default: false},

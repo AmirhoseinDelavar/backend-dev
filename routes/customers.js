@@ -14,17 +14,90 @@ let Manager = require('../models/manager.model');
 //     }); 
 // });
 
-router.route('/order/final').post(function(req,res,nxt){
+router.route('/order/final').post(async function(req,res,nxt){
     const id = req.body.id;
-    Order.findById(id,function(err,doc){
+    let total;
+    let cust_phone;
+    await Order.findById(id,function(err,doc){
         if (err)
             return res.status(400).json('Error: ' + err);
         doc["user_accepted"] = true;
+        total = doc["total"];
+        cust_phone = doc["cust_phone"];
         doc.save()
-                .then(() => res.json(doc["id"]))
-                .catch(err => res.status(400).json('Error: ' + err));
+            .catch(err => res.status(400).json('Error: ' + err));
+        total = doc["total"];
+        cust_phone = doc["cust_phone"];
         
     }); 
+    await Customer.find({'phonenum':cust_phone}, function(err,doc){
+        if (err)
+            return res.status(400).json('Error: ' + err);
+        if (doc["credit"] - total < 0){
+            res.json('Please Charge');
+            Order.findByIdAndDelete(id,function(err,doc){
+                if (err)
+                    return res.status(400).json('Error: ' + err);
+            });
+        }else{
+            doc["credit"] = doc["credit"] - total_t;
+            doc.save()
+                .then(()=>res.json(id))
+                .catch(err => res.status(400).json('Error: ' + err));
+        }
+    });
+});
+
+router.route('/order/reorder').post(async function(req,res,nxt){
+    const id = req.body.id;
+    let total_t;
+    let cust_phone_t;
+    let new_order_id;
+    await Order.findById(id,function(err,doc){
+        if (err)
+            return res.status(400).json('Error: ' + err);
+        
+        const list = doc["list"];
+        const total = doc["total"];
+        const manager_accepted = false;
+        const pre_delay = doc["pre_delay"];
+        const sent_delay = doc["sent_delay"];
+        const finished = false;
+        const user_accepted = true;
+        const newOrder = new Order({
+                total,
+                list,
+                cust_phone,
+                res_name,
+                user_accepted,
+                manager_accepted,
+                pre_delay,
+                sent_delay,
+                finished,
+        });
+        new_order_id = newOrder.id;
+        newOrder.save()
+            .catch(err => res.status(400).json('Error: ' + err));
+        total_t = doc["total"];
+        cust_phone_t = doc["cust_phone"];
+        
+    }); 
+    await Customer.find({'phonenum':cust_phone_t}, function(err,doc){
+        if (err)
+            return res.status(400).json('Error: ' + err);
+        if (doc["credit"] - total_t < 0){
+            res.json('Please Charge');
+            Order.findByIdAndDelete(new_order_id,function(err,doc){
+                if (err)
+                    return res.status(400).json('Error: ' + err);
+            });
+        }else{
+            doc["credit"] = doc["credit"] - total_t;
+            doc.save()
+                .then(()=>res.json(new_order_id))
+                .catch(err => res.status(400).json('Error: ' + err));
+        }
+    });
 });
 
 router.route('/history/:custphone').get(function(req,res,nxt){
@@ -41,10 +114,16 @@ router.route('/add/order/food/:name/:custphone/:res_name').get(async function(re
     const cust_phone = req.params.custphone;
     const res_name = req.params.res_name;
     let food;
+    let restaurant;
     await Food.find({'name':content, 'res_name':res_name},function(err,doc){
         if (err)
         return res.status(400).json('Error: ' + err);
         food = doc[0];
+    }); 
+    await Manager.find({'name':res_name},function(err,doc){
+        if (err)
+        return res.status(400).json('Error: ' + err);
+        restaurant = doc[0];
     }); 
     await Order.find({'res_name':food["res_name"], 'finished':false},function(err,doc){
         if (err)
@@ -52,18 +131,15 @@ router.route('/add/order/food/:name/:custphone/:res_name').get(async function(re
         if (doc.length === 0){
             let list = [];
             list.push(content);
-            let count = [];
-            count.push(1);
-            const total = 0;
+            const total = food["price"] + restaurant["fee"];
             const manager_accepted = false;
-            const pre_delay = 0;
-            const sent_delay = 0;
+            const pre_delay = food["pre_delay"];
+            const sent_delay = restaurant["delay"];
             const finished = false;
             const user_accepted = false;
             const newOrder = new Order({
                 total,
                 list,
-                count,
                 cust_phone,
                 res_name,
                 user_accepted,
@@ -78,7 +154,8 @@ router.route('/add/order/food/:name/:custphone/:res_name').get(async function(re
                 .catch(err => res.status(400).json('Error: ' + err));
         }else{
             doc[0]["list"].push(content);
-            doc[0]["count"].push(1);
+            doc[0]["total"] = doc[0]["total"] + food["price"];
+            doc[0]["pre_delay"] = doc[0]["pre_delay"] + food["pre_delay"];
             doc[0].save()
                 .then(() => res.json(doc[0]["id"]))
                 .catch(err => res.status(400).json('Error: ' + err));
