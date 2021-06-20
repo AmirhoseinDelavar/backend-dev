@@ -124,6 +124,17 @@ router.route('/register').post((req, res) => {
   .catch(err => res.status(400).json('Error: ' + err));
 });
 
+router.route('/food/:res_name').get((req, res) => {
+  const res_name = req.params.res_name;
+  
+  Food.find({'res_name': res_name}, function(err,doc){
+      if (err)
+          return res.status(400).json('Error: ' + err)
+      return res.json(doc);
+  });
+  
+});
+
 router.route('/login').post((req, res) => {
     const email = req.body.email;
     const password = req.body.password;
