@@ -277,6 +277,15 @@ router.route('/comment').post((req, res) => {
     .catch(err => res.status(400).json('Error: ' + err));
   });
 
+  router.route('/food').get((req, res) => {
+    Food.find({}, function(err,doc){
+        if (err)
+            res.status(400).json('Error: ' + err)
+        return res.json(doc);
+    });
+    
+  });
+
 router.route('/register').post((req, res) => {
   const phonenum = req.body.phonenum;
   const password = req.body.password;
