@@ -14,6 +14,13 @@ let Manager = require('../models/manager.model');
 //     }); 
 // });
 
+router.route('/order/finish').post((req, res) => {
+    const id = req.body.id;
+    Order.findByIdAndUpdate(id,{'finished':true})
+    .catch((err) =>res.status(400).json('Error: ' + err));
+    res.json(id);
+  });
+
 router.route('/order/final').post(async function(req,res,nxt){
     const id = req.body.id;
     let total;
@@ -26,22 +33,19 @@ router.route('/order/final').post(async function(req,res,nxt){
         cust_phone = doc["cust_phone"];
         doc.save()
             .catch(err => res.status(400).json('Error: ' + err));
-        total = doc["total"];
-        cust_phone = doc["cust_phone"];
+        
         
     }); 
     await Customer.find({'phonenum':cust_phone}, function(err,doc){
         if (err)
-            return res.status(400).json('Error: ' + err);
-        if (doc["credit"] - total < 0){
+        return res.status(400).json('Error: ' + err);
+        if (Number(doc[0]["credit"]) - total < 0){
             res.json('Please Charge');
-            Order.findByIdAndDelete(id,function(err,doc){
-                if (err)
-                    return res.status(400).json('Error: ' + err);
-            });
+            Order.findByIdAndUpdate(id,{'user_accepted':false})
+                .catch(err => res.status(400).json('Error: ' + err));
         }else{
-            doc["credit"] = doc["credit"] - total_t;
-            doc.save()
+            doc[0]["credit"] = doc[0]["credit"] - total;
+            doc[0].save()
                 .then(()=>res.json(id))
                 .catch(err => res.status(400).json('Error: ' + err));
         }
@@ -64,6 +68,10 @@ router.route('/order/reorder').post(async function(req,res,nxt){
         const sent_delay = doc["sent_delay"];
         const finished = false;
         const user_accepted = true;
+        const cust_phone = doc["cust_phone"];
+        const res_name = doc["res_name"];
+        total_t = doc["total"];
+        cust_phone_t = doc["cust_phone"];
         const newOrder = new Order({
                 total,
                 list,
@@ -78,22 +86,19 @@ router.route('/order/reorder').post(async function(req,res,nxt){
         new_order_id = newOrder.id;
         newOrder.save()
             .catch(err => res.status(400).json('Error: ' + err));
-        total_t = doc["total"];
-        cust_phone_t = doc["cust_phone"];
+        
         
     }); 
     await Customer.find({'phonenum':cust_phone_t}, function(err,doc){
         if (err)
             return res.status(400).json('Error: ' + err);
-        if (doc["credit"] - total_t < 0){
+        if (doc[0]["credit"] - total_t < 0){
             res.json('Please Charge');
-            Order.findByIdAndDelete(new_order_id,function(err,doc){
-                if (err)
-                    return res.status(400).json('Error: ' + err);
-            });
+            Order.findByIdAndUpdate(new_order_id,{'user_accepted':false,'manager_accepted':false})
+                .catch(err => res.status(400).json('Error: ' + err));
         }else{
-            doc["credit"] = doc["credit"] - total_t;
-            doc.save()
+            doc[0]["credit"] = doc[0]["credit"] - total_t;
+            doc[0].save()
                 .then(()=>res.json(new_order_id))
                 .catch(err => res.status(400).json('Error: ' + err));
         }
@@ -178,8 +183,6 @@ router.route('/update/order').post((req, res) => {
     .then(Order => {
         if (req.body.list) 
             Order.list = req.body.list;
-        if (req.body.count)
-            Order.count = req.body.count;
         if (req.body.pre_delay)
             Order.pre_delay = req.body.pre_delay;
         if (req.body.sent_delay)
@@ -317,6 +320,18 @@ router.route('/register').post((req, res) => {
   .then(() => res.json(newCustomer.id))
   .catch(err => res.status(400).json('Error: ' + err));
 });
+
+
+
+router.route('/profile').post((req, res) => {
+    const id = req.body.id;
+    Customer.findById(id, function(err,doc){
+        if (err)
+            return res.status(400).json('Error: ' + err)
+        return res.json(doc);
+    });
+    
+  });
 
 router.route('/login').post((req, res) => {
     const phonenum = req.body.phonenum;

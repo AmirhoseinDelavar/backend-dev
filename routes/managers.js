@@ -135,6 +135,17 @@ router.route('/food/:res_name').get((req, res) => {
   
 });
 
+router.route('/profile').post((req, res) => {
+  const id = req.body.id;
+  Manager.findById(id, function(err,doc){
+      if (err)
+          return res.status(400).json('Error: ' + err)
+      return res.json(doc);
+  });
+  
+});
+
+
 router.route('/login').post((req, res) => {
     const email = req.body.email;
     const password = req.body.password;
