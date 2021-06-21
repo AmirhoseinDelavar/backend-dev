@@ -17,14 +17,16 @@ let Manager = require('../models/manager.model');
 router.route('/order/finish').post((req, res) => {
     const id = req.body.id;
     Order.findByIdAndUpdate(id,{'finished':true})
+    .then((order) => res.json(order))
     .catch((err) =>res.status(400).json('Error: ' + err));
-    res.json(id);
+    ;
   });
 
 router.route('/order/final').post(async function(req,res,nxt){
     const id = req.body.id;
     let total;
     let cust_phone;
+    let order;
     await Order.findById(id,function(err,doc){
         if (err)
             return res.status(400).json('Error: ' + err);
@@ -33,7 +35,7 @@ router.route('/order/final').post(async function(req,res,nxt){
         cust_phone = doc["cust_phone"];
         doc.save()
             .catch(err => res.status(400).json('Error: ' + err));
-        
+        order = doc;
         
     }); 
     await Customer.find({'phonenum':cust_phone}, function(err,doc){
@@ -46,7 +48,7 @@ router.route('/order/final').post(async function(req,res,nxt){
         }else{
             doc[0]["credit"] = doc[0]["credit"] - total;
             doc[0].save()
-                .then(()=>res.json(id))
+                .then(()=>res.json(order))
                 .catch(err => res.status(400).json('Error: ' + err));
         }
     });
@@ -56,7 +58,7 @@ router.route('/order/reorder').post(async function(req,res,nxt){
     const id = req.body.id;
     let total_t;
     let cust_phone_t;
-    let new_order_id;
+    let new_order;
     await Order.findById(id,function(err,doc){
         if (err)
             return res.status(400).json('Error: ' + err);
@@ -83,7 +85,7 @@ router.route('/order/reorder').post(async function(req,res,nxt){
                 sent_delay,
                 finished,
         });
-        new_order_id = newOrder.id;
+        new_order = newOrder;
         newOrder.save()
             .catch(err => res.status(400).json('Error: ' + err));
         
@@ -94,12 +96,12 @@ router.route('/order/reorder').post(async function(req,res,nxt){
             return res.status(400).json('Error: ' + err);
         if (doc[0]["credit"] - total_t < 0){
             res.json('Please Charge');
-            Order.findByIdAndUpdate(new_order_id,{'user_accepted':false,'manager_accepted':false})
+            Order.findByIdAndUpdate(new_order.id,{'user_accepted':false,'manager_accepted':false})
                 .catch(err => res.status(400).json('Error: ' + err));
         }else{
             doc[0]["credit"] = doc[0]["credit"] - total_t;
             doc[0].save()
-                .then(()=>res.json(new_order_id))
+                .then(()=>res.json(new_order))
                 .catch(err => res.status(400).json('Error: ' + err));
         }
     });
@@ -155,14 +157,14 @@ router.route('/add/order/food/:name/:custphone/:res_name').get(async function(re
               });
             
               newOrder.save()
-              .then(() => res.json(newOrder.id))
+              .then(() => res.json(newOrder))
                 .catch(err => res.status(400).json('Error: ' + err));
         }else{
             doc[0]["list"].push(content);
             doc[0]["total"] = doc[0]["total"] + food["price"];
             doc[0]["pre_delay"] = doc[0]["pre_delay"] + food["pre_delay"];
             doc[0].save()
-                .then(() => res.json(doc[0]["id"]))
+                .then(() => res.json(doc[0]))
                 .catch(err => res.status(400).json('Error: ' + err));
         }
         
@@ -190,7 +192,7 @@ router.route('/update/order').post((req, res) => {
         if (req.body.finished)
             Order.finished = req.body.finished;
         Order.save()
-          .then(() => res.json(Order.id))
+          .then(() => res.json(Order))
           .catch(err => res.status(400).json('Error: ' + err));
 
     })
@@ -276,7 +278,7 @@ router.route('/comment').post((req, res) => {
         rate,
     });
     newComment.save()
-    .then(() => res.json(newComment.id))
+    .then(() => res.json(newComment))
     .catch(err => res.status(400).json('Error: ' + err));
   });
 
@@ -317,7 +319,7 @@ router.route('/register').post((req, res) => {
   });
 
   newCustomer.save()
-  .then(() => res.json(newCustomer.id))
+  .then(() => res.json(newCustomer))
   .catch(err => res.status(400).json('Error: ' + err));
 });
 
@@ -340,7 +342,7 @@ router.route('/login').post((req, res) => {
         if (err)
             res.status(400).json('Error: ' + err)
         else if(doc[0]["password"] == password)
-            return res.json(doc[0]["id"]);
+            return res.json(doc[0]);
         else 
             return res.json("no match!");
 
@@ -365,7 +367,7 @@ router.route('/update').post((req, res) => {
             Customer.date = Date.parse(req.body.date);
   
         Customer.save()
-          .then(() => res.json(Customer.id))
+          .then(() => res.json(Customer))
           .catch(err => res.status(400).json('Error: ' + err));
 
     })

@@ -17,7 +17,7 @@ router.route('/reply').post((req, res) => {
       .then(Comment => {
           Comment.reply = req.body.reply;
           Comment.save()
-            .then(() => res.json(Comment.id))
+            .then(() => res.json(Comment))
             .catch(err => res.status(400).json('Error: ' + err));
   
       })
@@ -38,7 +38,7 @@ router.route('/accept/order').post((req, res) => {
       .then(Order => {
           Order.manager_accepted = true;
           Order.save()
-            .then(() => res.json(Order.id))
+            .then(() => res.json(Order))
             .catch(err => res.status(400).json('Error: ' + err));
   
       })
@@ -60,7 +60,7 @@ router.route('/add/food').post((req, res) => {
     });
   
     newFood.save()
-    .then(() => res.json(newFood.id))
+    .then(() => res.json(newFood))
     .catch(err => res.status(400).json('Error: ' + err));
   });
 
@@ -87,7 +87,7 @@ router.route('/add/food').post((req, res) => {
             Food.pre_delay = Number(req.body.pre_delay);
   
         Food.save()
-          .then(() => res.json(Food.id))
+          .then(() => res.json(Food))
           .catch(err => res.status(400).json('Error: ' + err));
 
     })
@@ -120,7 +120,7 @@ router.route('/register').post((req, res) => {
   });
 
   newManager.save()
-  .then(() => res.json(newManager.id))
+  .then(() => res.json(newManager))
   .catch(err => res.status(400).json('Error: ' + err));
 });
 
@@ -153,7 +153,7 @@ router.route('/login').post((req, res) => {
         if (err)
             return res.status(400).json('Error: ' + err)
         else if(doc[0]["password"] == password)
-            return res.json(doc[0]["id"]);
+            return res.json(doc[0]);
         else 
             return res.json("no match!");
 
@@ -184,7 +184,7 @@ router.route('/update').post((req, res) => {
             Manager.date = Date.parse(req.body.date);
   
         Manager.save()
-          .then(() => res.json(Manager.id))
+          .then(() => res.json(Manager))
           .catch(err => res.status(400).json('Error: ' + err));
 
     })
