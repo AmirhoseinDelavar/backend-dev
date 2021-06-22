@@ -132,7 +132,7 @@ router.route('/add/order/food/:name/:custphone/:res_name').get(async function(re
         return res.status(400).json('Error: ' + err);
         restaurant = doc[0];
     }); 
-    await Order.find({'res_name':food["res_name"], 'finished':false},function(err,doc){
+    await Order.find({'res_name':food["res_name"], 'finished':false, 'cust_phone':cust_phone},function(err,doc){
         if (err)
         return res.status(400).json('Error: ' + err);
         if (doc.length === 0){
